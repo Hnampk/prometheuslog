@@ -30,7 +30,7 @@ Log:
 trace the process duration of a function
 
 ```golang
-import flogging "github.com/Hnampk/prometheuslog/gotracing"
+import "github.com/Hnampk/prometheuslog/gotracing"
 
 var tracer = gotracing.MustGetTracer("mypackage")
 
