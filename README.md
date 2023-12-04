@@ -11,7 +11,7 @@ go run main.go
 Clone from flogging of Hyperledger Fabric:
 https://github.com/hyperledger/fabric/tree/master/common/flogging
 
-[1] `import flogging "github.com/Hnampk/flogging"`
+[1] `import flogging "github.com/Hnampk/prometheuslog/flogging"`
 
 [2] Just define `logger = flogging.MustGetLogger("services.abc.xyz")`
 
@@ -23,5 +23,22 @@ https://github.com/hyperledger/fabric/tree/master/common/flogging
 Log:
     Level: INFO # DEBUG/INFO/WARN/ERROR (default: DEBUG)
     Format: "%{color}%{time:2006-01-02 15:04:05.000 MST} [%{module}] %{shortfunc} -> %{level:.4s} %{id:03x}%{color:reset} %{message}" # default: json
+```
+
+## gotracing
+
+trace the process duration of a function
+
+```golang
+import flogging "github.com/Hnampk/prometheuslog/gotracing"
+
+var tracer = gotracing.MustGetTracer("mypackage")
+
+func test(requestID string){
+    tracer.StartFunction(requestID)
+	defer accountTracer.EndFunctionWithDurationSince(requestID, time.Now())
+
+    // do something
+}
 ```
 
