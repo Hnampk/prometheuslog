@@ -32,7 +32,10 @@ var (
 
 // MustGetTracer creates a tracer with the specified name. If an invalid name
 // is provided, the operation will panic.
-func MustGetTracer(moduleName string) *Tracer {
+func MustGetTracer(moduleName string, durationBuckets ...float64) *Tracer {
+	if len(durationBuckets) == 0 {
+		durationBuckets = ProcessTimeBuckets
+	}
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
 		log.Fatal("Failed to read build info")
@@ -70,7 +73,7 @@ func MustGetTracer(moduleName string) *Tracer {
 			Subsystem: moduleName,
 			Name:      "duration",
 			Help:      "Amount of time spent to process a transaction",
-			Buckets:   ProcessTimeBuckets,
+			Buckets:   durationBuckets,
 		}, []string{"func"},
 	)
 	countSucceedMetrics := prometheus.NewGaugeVec(
