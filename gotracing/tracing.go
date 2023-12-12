@@ -191,9 +191,7 @@ func (t *Tracer) FunctionFailed(traceNo string) (startTime time.Time) {
 	return
 }
 
-// StartFunction must be called at the begin of function
-//
-//	log level will be INFO
+// CountOn will count on any field
 func (t *Tracer) CountOn(field string) (startTime time.Time) {
 	t.metrics.counterMetrics.WithLabelValues(field).Add(1)
 	return
