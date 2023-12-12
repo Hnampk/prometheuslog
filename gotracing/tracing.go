@@ -23,6 +23,8 @@ type MetricsManager struct {
 	durationMetrics     *prometheus.HistogramVec
 	countSucceedMetrics *prometheus.GaugeVec
 	countFailedMetrics  *prometheus.GaugeVec
+
+	counterMetrics *prometheus.GaugeVec
 }
 
 var (
@@ -92,12 +94,21 @@ func MustGetTracer(moduleName string, durationBuckets ...float64) *Tracer {
 			Help:      "Number of function done",
 		}, []string{"func"},
 	)
+	counterMetrics := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: moduleName,
+			Name:      "counter",
+			Help:      "Number of things",
+		}, []string{"field"},
+	)
 	prometheus.MustRegister(
 		countStartMetrics,
 		countEndMetrics,
 		durationMetrics,
 		countSucceedMetrics,
 		countFailedMetrics,
+		counterMetrics,
 	)
 
 	return &Tracer{
@@ -108,6 +119,7 @@ func MustGetTracer(moduleName string, durationBuckets ...float64) *Tracer {
 			durationMetrics:     durationMetrics,
 			countSucceedMetrics: countSucceedMetrics,
 			countFailedMetrics:  countFailedMetrics,
+			counterMetrics:      counterMetrics,
 		},
 	}
 }
@@ -176,6 +188,14 @@ func (t *Tracer) FunctionSucceed(traceNo string) (startTime time.Time) {
 // FunctionFailed count on successfully function call
 func (t *Tracer) FunctionFailed(traceNo string) (startTime time.Time) {
 	t.metrics.countFailedMetrics.WithLabelValues(getCallerFuncName()).Add(1)
+	return
+}
+
+// StartFunction must be called at the begin of function
+//
+//	log level will be INFO
+func (t *Tracer) CountOn(field string) (startTime time.Time) {
+	t.metrics.counterMetrics.WithLabelValues(field).Add(1)
 	return
 }
 
