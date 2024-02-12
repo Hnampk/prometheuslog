@@ -24,7 +24,8 @@ type MetricsManager struct {
 	countSucceedMetrics *prometheus.GaugeVec
 	countFailedMetrics  *prometheus.GaugeVec
 
-	counterMetrics *prometheus.GaugeVec
+	counterMetrics  *prometheus.GaugeVec
+	observerMetrics *prometheus.GaugeVec
 }
 
 var (
@@ -102,6 +103,14 @@ func MustGetTracer(moduleName string, durationBuckets ...float64) *Tracer {
 			Help:      "Number of things",
 		}, []string{"field"},
 	)
+	observerMetrics := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Subsystem: moduleName,
+			Name:      "observer",
+			Help:      "value of things",
+		}, []string{"field"},
+	)
 	prometheus.MustRegister(
 		countStartMetrics,
 		countEndMetrics,
@@ -109,6 +118,7 @@ func MustGetTracer(moduleName string, durationBuckets ...float64) *Tracer {
 		countSucceedMetrics,
 		countFailedMetrics,
 		counterMetrics,
+		observerMetrics,
 	)
 
 	return &Tracer{
@@ -120,6 +130,7 @@ func MustGetTracer(moduleName string, durationBuckets ...float64) *Tracer {
 			countSucceedMetrics: countSucceedMetrics,
 			countFailedMetrics:  countFailedMetrics,
 			counterMetrics:      counterMetrics,
+			observerMetrics:     observerMetrics,
 		},
 	}
 }
@@ -192,8 +203,14 @@ func (t *Tracer) FunctionFailed(traceNo string) (startTime time.Time) {
 }
 
 // CountOn will count on any field
-func (t *Tracer) CountOn(field string) (startTime time.Time) {
+func (t *Tracer) CountOn(field string) {
 	t.metrics.counterMetrics.WithLabelValues(field).Add(1)
+	return
+}
+
+// ObserveOn will count on any field
+func (t *Tracer) ObserveOn(field string, value float64) {
+	t.metrics.observerMetrics.WithLabelValues(field).Set(value)
 	return
 }
 
